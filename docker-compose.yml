@@ -1,0 +1,58 @@
+version: '3'
+services:
+
+  db:
+    image: mysql:5.7
+    container_name: db
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_DATABASE=laravel_docker_compose
+      - MYSQL_ROOT_PASSWORD=secret
+    volumes:
+      - db_data:/var/lib/mysql/
+      - .docker/mysql/my.cnf:/etc/mysql/my.cnf
+    networks:
+      app_network:
+        ipv4_address: 172.29.0.2
+
+  app:
+    build: .docker/php-fpm
+    image: app-laravel:0.1.0
+    container_name: app
+    depends_on:
+      - db
+    volumes:
+      - ./:/var/www
+      - .php-fpm/php/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      app_network:
+        ipv4_address: 172.29.0.3
+
+  web:
+    image: nginx:stable-alpine
+    container_name: web
+    ports:
+      - "8000:8000"
+    depends_on:
+      - app
+    volumes:
+      - ./:/var/www/
+      - .docker/nginx/:/etc/nginx/
+    networks:
+      app_network:
+        ipv4_address: 172.29.0.4
+
+#Volumes
+volumes:
+  db_data:
+    driver: local
+
+#Docker Networks
+networks:
+  app_network:
+    driver: bridge
+    ipam: ## Set network
+      driver: default
+      config:
+        - subnet: 172.29.0.0/24
