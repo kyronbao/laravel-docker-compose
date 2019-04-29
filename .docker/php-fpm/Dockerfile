@@ -1,4 +1,4 @@
-FROM php:7.3-fpm-alpine3.9
+FROM php:7.3.4-fpm-alpine3.9
 
 LABEL maintainer="kyronbao@gmail.com"
 
